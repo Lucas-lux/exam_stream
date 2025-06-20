@@ -1,246 +1,156 @@
 package streaming
 
-import com.typesafe.config.{Config, ConfigFactory}
-import models.{HalfHourlyReading, HouseholdInfo, WeatherData}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.streaming.{OutputMode, StreamingQuery, Trigger}
+import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.types._
+import models.SmartMeterSchemas.meterSchema
 
-/**
- * Processeur de flux qui consomme les données de Kafka
- * et les traite en temps réel avec Spark Structured Streaming
- */
-object SmartMeterStreamProcessor {
-  
-  // Charger la configuration
-  val config: Config = ConfigFactory.load()
-  val bootstrapServers: String = config.getString("kafka.bootstrap.servers")
-  val metersTopic: String = config.getString("kafka.topic.meters")
-  val appName: String = config.getString("spark.app.name")
-  val sparkMaster: String = config.getString("spark.master")
-  val checkpointDir: String = config.getString("spark.checkpoint.dir")
-  val householdsInfoPath: String = config.getString("paths.households.info")
-  val weatherHourlyPath: String = config.getString("paths.weather.hourly")
+object SmartMeterStreamProcessorSparkOnly {
 
-  // Schéma pour les données des compteurs
-  val meterSchema = new StructType()
-    .add("meterid", StringType)
-    .add("datetime", StringType)
-    .add("energy", DoubleType)
+  def main(args: Array[String]): Unit = {
+    // 1. Initialisation de SparkSession
+    val spark = SparkSession.builder()
+      .appName("SmartMeterStreamProcessorSparkOnly")
+      .getOrCreate()
+    import spark.implicits._
 
-  // Initialiser SparkSession
-  lazy val spark: SparkSession = SparkSession.builder()
-    .appName(appName)
-    .master(sparkMaster)
-    .config("spark.sql.streaming.checkpointLocation", checkpointDir)
-    .getOrCreate()
+    // 2. Chargement des paramètres depuis spark.conf
+    val bootstrapServers    = spark.conf.get("spark.kafka.bootstrap.servers")
+    val metersTopic         = spark.conf.get("spark.kafka.topic.meters")
+    val householdsInfoPath  = spark.conf.get("spark.paths.households.info")
+    val weatherHourlyPath   = spark.conf.get("spark.paths.weather.hourly")
+    val checkpointDir       = spark.conf.get("spark.checkpoint.dir")
+    val triggerIntervalMs   = spark.conf.get("spark.stream.interval.ms").toLong
+    val halfHourlyDataDir   = "data/halfourlydataset"
 
-  import spark.implicits._
-
-  /**
-   * Démarrer le processeur de flux
-   */
-  def start(): Unit = {
-    println("Démarrage du processeur de flux...")
-
-    // Configurer le niveau de log
     spark.sparkContext.setLogLevel("WARN")
-    
-    // Charger les données de référence statiques
-    val householdInfoDF = loadHouseholdsInfo()
-    val weatherDataDF = loadWeatherData()
-    
-    // Créer le flux depuis Kafka
-    val kafkaStream = spark
-      .readStream
+    println(s"Configures: kafka=$bootstrapServers/$metersTopic," +
+            s" households=$householdsInfoPath," +
+            s" weather=$weatherHourlyPath," +
+            s" checkpoint=$checkpointDir," +
+            s" trigger=$triggerIntervalMs ms")
+
+    // 3. Schéma du JSON Kafka
+    val dailySchema = new StructType()
+      .add("LCLid", StringType)
+      .add("day", StringType)
+      .add("energy_median", DoubleType)
+      .add("energy_mean", DoubleType)
+      .add("energy_max", DoubleType)
+      .add("energy_count", IntegerType)
+      .add("energy_std", DoubleType)
+      .add("energy_sum", DoubleType)
+      .add("energy_min", DoubleType)
+
+    // 4. Lecture des données statiques en batch
+    val householdInfoDF = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(householdsInfoPath)
+      .withColumnRenamed("id", "meterid") // adapter si besoin
+
+    val weatherDF = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(weatherHourlyPath)
+      .withColumn("timestamp", to_timestamp($"datetime", "yyyy-MM-dd HH:mm:ss"))
+      .withColumn("date",    to_date($"timestamp"))
+      .withColumn("hour",    hour($"timestamp"))
+      .drop("datetime")
+
+    // 5. Lecture du flux Kafka
+    val rawStream = spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", bootstrapServers)
       .option("subscribe", metersTopic)
       .option("startingOffsets", "earliest")
       .load()
 
-    // Extraire et convertir les valeurs JSON de Kafka
-    val meterReadingsDF = kafkaStream
-      .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
-      .select(
-        col("key").as("meterid"),
-        from_json(col("value"), meterSchema).as("data")
-      )
-      .select("meterid", "data.*")
+    // 6. Parsing JSON et structuration
+    val readings = rawStream
+      .selectExpr("CAST(key AS STRING) as LCLid", "CAST(value AS STRING) as json")
+      .select(from_json($"json", meterSchema).as("data"))
+      .select("data.*")
+      .withColumn("timestamp", to_timestamp($"tstp", "yyyy-MM-dd HH:mm:ss"))
 
-    // Conversion timestamp
-    val parsedReadingsDF = meterReadingsDF
-      .withColumn("timestamp", to_timestamp(col("datetime"), "yyyy-MM-dd HH:mm:ss"))
-      .withColumn("hour", hour(col("timestamp")))
-      .withColumn("date", to_date(col("timestamp")))
+    // 7. Enrichissement par jointure batch (broadcast)
+    val enriched = readings
+      .join(broadcast(householdInfoDF), "meterid")
+      .join(broadcast(weatherDF),
+            Seq("date", "hour"),
+            "left")
 
-    // Joindre avec les données de ménage
-    val enrichedWithHouseholdsDF = parsedReadingsDF
-      .join(householdInfoDF, "meterid")
+    // 8. Agrégations & détection d'anomalies
 
-    // Joindre avec les données météo sur l'heure la plus proche 
-    val fullyEnrichedDF = enrichedWithHouseholdsDF
-      .join(
-        weatherDataDF,
-        enrichedWithHouseholdsDF("date") === weatherDataDF("date") &&
-        enrichedWithHouseholdsDF("hour") === weatherDataDF("hour"),
-        "left"
-      )
-      .drop(weatherDataDF("date"))
-      .drop(weatherDataDF("hour"))
-
-    // Calculer des agrégations en temps réel
-    
-    // 1. Consommation moyenne par groupe ACORN (fenêtre de 30 minutes)
-    val acornGroupConsumptionDF = fullyEnrichedDF
+    // 8.1 Consommation moyenne par groupe ACORN (30mn)
+    val acornAgg = enriched
       .withWatermark("timestamp", "30 minutes")
       .groupBy(
-        window(col("timestamp"), "30 minutes"),
-        col("acornGroup")
+        window($"timestamp", "30 minutes"),
+        $"acornGroup"
       )
       .agg(
-        avg("energy").as("avg_energy"),
-        count("*").as("readings_count")
+        avg("energy").alias("avg_energy"),
+        count("*").alias("readings_count")
       )
       .select(
-        col("window.start").as("window_start"),
-        col("window.end").as("window_end"),
-        col("acornGroup"),
-        col("avg_energy"),
-        col("readings_count")
+        $"window.start".alias("window_start"),
+        $"window.end".alias("window_end"),
+        $"acornGroup",
+        $"avg_energy",
+        $"readings_count"
       )
 
-    // 2. Consommation totale par ménage (fenêtre de 1 heure)
-    val householdTotalDF = fullyEnrichedDF
+    // 8.2 Consommation totale par ménage (1h)
+    val householdAgg = enriched
       .withWatermark("timestamp", "1 hour")
       .groupBy(
-        window(col("timestamp"), "1 hour"),
-        col("meterid")
+        window($"timestamp", "1 hour"),
+        $"meterid"
       )
       .agg(
-        sum("energy").as("total_energy"),
-        avg("temperature").as("avg_temperature")
+        sum("energy").alias("total_energy"),
+        avg("temperature").alias("avg_temperature")
       )
       .select(
-        col("window.start").as("window_start"),
-        col("window.end").as("window_end"),
-        col("meterid"),
-        col("total_energy"),
-        col("avg_temperature")
+        $"window.start".alias("window_start"),
+        $"window.end".alias("window_end"),
+        $"meterid",
+        $"total_energy",
+        $"avg_temperature"
       )
 
-    // Détecter les pics de consommation (avec fenêtre glissante)
-    val consumptionThreshold = 10.0 // à ajuster selon vos données
-    val anomaliesDF = fullyEnrichedDF
-      .withWatermark("timestamp", "30 minutes")
-      .groupBy(
-        window(col("timestamp"), "30 minutes", "10 minutes"),
-        col("meterid")
-      )
-      .agg(
-        avg("energy").as("avg_energy")
-      )
-      .filter(col("avg_energy") > consumptionThreshold)
-      .select(
-        col("window.start").as("anomaly_start"),
-        col("window.end").as("anomaly_end"),
-        col("meterid"),
-        col("avg_energy")
-      )
+    // 8.3 Détection de pics (fenêtre glissante 30mn/10mn)
+    val threshold = 10.0
+    val anomalies = readings.filter($"Anomaly_Label" === "Abnormal")
 
-    // Démarrer les requêtes streaming pour écrire les résultats
-    
-    // Sortie pour consommation par groupe ACORN
-    val acornGroupQuery = acornGroupConsumptionDF
-      .writeStream
-      .outputMode(OutputMode.Append())
-      .format("console")
-      .option("truncate", false)
-      .option("numRows", 20)
-      .trigger(Trigger.ProcessingTime("30 seconds"))
-      .start()
+    // 9. Écriture des résultats en console
+    def writeConsole(df: DataFrame, name: String, trigMs: Long) =
+      df.writeStream
+        .outputMode("append")
+        .format("console")
+        .option("truncate", "false")
+        .option("numRows", 20)
+        .trigger(Trigger.ProcessingTime(s"${trigMs} milliseconds"))
+        .queryName(name)
+        .start()
 
-    // Sortie pour consommation totale par ménage
-    val householdTotalQuery = householdTotalDF
-      .writeStream
-      .outputMode(OutputMode.Append())
-      .format("console")
-      .option("truncate", false)
-      .option("numRows", 20)
-      .trigger(Trigger.ProcessingTime("1 minute"))
-      .start()
+    val q1 = writeConsole(acornAgg,     "acornGroup",    triggerIntervalMs)
+    val q2 = writeConsole(householdAgg, "householdTotal", triggerIntervalMs * 2)
+    val q3 = writeConsole(anomalies,    "anomalies",     triggerIntervalMs / 3)
 
-    // Sortie pour les anomalies détectées
-    val anomaliesQuery = anomaliesDF
-      .writeStream
-      .outputMode(OutputMode.Append())
-      .format("console")
-      .option("truncate", false)
-      .option("numRows", 20)
-      .trigger(Trigger.ProcessingTime("10 seconds"))
-      .start()
+    // Traitement batch du daily_dataset (affichage simple)
+    val dailyDataDir = "data/daily_dataset"
+    val dailyDF = spark.read
+      .schema(dailySchema)
+      .option("header", "true")
+      .csv(dailyDataDir)
 
-    // Attendre que les requêtes soient terminées
+    println("Exemple de données du daily_dataset :")
+    dailyDF.show(5, truncate = false)
+
+    // 10. Lancement et attente
     spark.streams.awaitAnyTermination()
   }
-
-  /**
-   * Charger les informations des ménages
-   */
-  def loadHouseholdsInfo(): DataFrame = {
-    println(s"Chargement des données de ménage depuis $householdsInfoPath")
-    
-    try {
-      spark.read
-        .option("header", true)
-        .option("inferSchema", true)
-        .csv(householdsInfoPath)
-    } catch {
-      case e: Exception =>
-        println(s"Erreur lors du chargement des informations des ménages: ${e.getMessage}")
-        
-        // Créer un DataFrame vide avec le schéma attendu en cas d'erreur
-        spark.createDataFrame(
-          spark.sparkContext.emptyRDD[HouseholdInfo],
-          classOf[HouseholdInfo]
-        )
-    }
-  }
-
-  /**
-   * Charger les données météo
-   */
-  def loadWeatherData(): DataFrame = {
-    println(s"Chargement des données météo depuis $weatherHourlyPath")
-    
-    try {
-      val weatherDF = spark.read
-        .option("header", true)
-        .option("inferSchema", true)
-        .csv(weatherHourlyPath)
-        
-      // Extraire date et heure à partir du timestamp
-      weatherDF
-        .withColumn("timestamp", to_timestamp(col("datetime"), "yyyy-MM-dd HH:mm:ss"))
-        .withColumn("date", to_date(col("timestamp")))
-        .withColumn("hour", hour(col("timestamp")))
-    } catch {
-      case e: Exception =>
-        println(s"Erreur lors du chargement des données météo: ${e.getMessage}")
-        
-        // Créer un DataFrame vide avec le schéma attendu en cas d'erreur
-        val emptyWeatherRDD = spark.sparkContext.emptyRDD[WeatherData]
-        val weatherDF = spark.createDataFrame(emptyWeatherRDD, classOf[WeatherData])
-        
-        weatherDF
-          .withColumn("timestamp", to_timestamp(col("datetime"), "yyyy-MM-dd HH:mm:ss"))
-          .withColumn("date", to_date(col("timestamp")))
-          .withColumn("hour", hour(col("timestamp")))
-    }
-  }
-
-  def main(args: Array[String]): Unit = {
-    start()
-  }
-} 
+}

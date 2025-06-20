@@ -1,5 +1,7 @@
 package models
 
+import org.apache.spark.sql.types._
+
 /**
  * Modèle représentant les données de consommation demi-horaires
  */
@@ -42,4 +44,12 @@ case class WeatherData(
   humidity: Double,
   precipIntensity: Double,
   visibility: Double
-) 
+)
+
+object SmartMeterSchemas {
+  val meterSchema = new StructType()
+    .add("meterid", StringType)
+    .add("datetime", StringType)
+    .add("energy", DoubleType)
+  // ajoute les autres colonnes présentes dans tes CSV 
+} 

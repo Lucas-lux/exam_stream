@@ -1,11 +1,7 @@
 import kafka.SmartMeterKafkaProducer
-import streaming.SmartMeterStreamProcessor
+import streaming.SmartMeterStreamProcessorSparkOnly
 
-/**
- * Point d'entrée principal de l'application
- * Permet de lancer soit le producteur Kafka, soit le traitement du flux,
- * soit les deux en parallèle
- */
+
 object SmartMetersApp {
   
   def main(args: Array[String]): Unit = {
@@ -26,7 +22,7 @@ object SmartMetersApp {
         
       case "consumer" =>
         println("Démarrage du consommateur Spark Streaming...")
-        SmartMeterStreamProcessor.start()
+        SmartMeterStreamProcessorSparkOnly.main(Array())
         
       case "both" =>
         println("Démarrage du producteur Kafka et du consommateur Spark Streaming en parallèle...")
@@ -42,7 +38,7 @@ object SmartMetersApp {
         producerThread.start()
         
         // Démarrer le consommateur dans le thread principal
-        SmartMeterStreamProcessor.start()
+        SmartMeterStreamProcessorSparkOnly.main(Array())
         
       case _ =>
         println(s"Mode non reconnu: $mode")
