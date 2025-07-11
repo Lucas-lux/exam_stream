@@ -48,8 +48,7 @@ case class WeatherData(
 
 object SmartMeterSchemas {
   val meterSchema = new StructType()
-    .add("meterid", StringType)
-    .add("datetime", StringType)
-    .add("energy", DoubleType)
-  // ajoute les autres colonnes présentes dans tes CSV 
+    .add("LCLid", StringType)
+    .add("tstp", StringType)
+    .add("energy(kWh/hh)", DoubleType)
 } 

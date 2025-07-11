@@ -18,8 +18,8 @@ object SmartMeterKafkaProducer {
   private val bootstrapServers  = config.getString("kafka.bootstrap.servers")
   private val metersTopic       = config.getString("kafka.topic.meters")
   private val sleepIntervalMs   = config.getLong("kafka.producer.interval.ms")
-  private val halfHourlyDataDir = "data/halfourlydataset"
-  private val dailyDataDir      = "data/daily_dataset"
+  private val halfHourlyDataDir = config.getString("paths.meters.halfhourly")
+  private val dailyDataDir      = config.getString("paths.meters.daily")
   private val checkpointDir     = config.getString("paths.checkpoint")
 
   // Initialiser SparkSession

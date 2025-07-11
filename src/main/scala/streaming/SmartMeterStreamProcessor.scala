@@ -69,10 +69,12 @@ object SmartMeterStreamProcessorSparkOnly {
 
     // 6. Parsing JSON et structuration
     val readings = rawStream
-      .selectExpr("CAST(key AS STRING) as LCLid", "CAST(value AS STRING) as json")
+      .selectExpr("CAST(key AS STRING) as LCLid_key", "CAST(value AS STRING) as json")
       .select(from_json($"json", meterSchema).as("data"))
       .select("data.*")
-      .withColumn("timestamp", to_timestamp($"tstp", "yyyy-MM-dd HH:mm:ss"))
+      .withColumn("timestamp", to_timestamp($"tstp", "yyyy-MM-dd HH:mm:ss.SSSSSSSS"))
+      .withColumn("energy", $"energy(kWh/hh)")
+      .withColumn("meterid", $"LCLid")
 
     // 7. Enrichissement par jointure batch (broadcast)
     val enriched = readings
@@ -121,9 +123,9 @@ object SmartMeterStreamProcessorSparkOnly {
         $"avg_temperature"
       )
 
-    // 8.3 Détection de pics (fenêtre glissante 30mn/10mn)
-    val threshold = 10.0
-    val anomalies = readings.filter($"Anomaly_Label" === "Abnormal")
+    // 8.3 Détection de pics (seuil de consommation élevée)
+    val threshold = 2.0
+    val anomalies = readings.filter($"energy" > threshold)
 
     // 9. Écriture des résultats en console
     def writeConsole(df: DataFrame, name: String, trigMs: Long) =
