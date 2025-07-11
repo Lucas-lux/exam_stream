@@ -1,0 +1,144 @@
+:: loading settings :: url = jar:file:/Users/evan/opt/spark-3.3.2/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Ivy Default Cache set to: /Users/evan/.ivy2/cache
+The jars for the packages stored in: /Users/evan/.ivy2/jars
+org.apache.spark#spark-sql-kafka-0-10_2.12 added as a dependency
+org.apache.kafka#kafka-clients added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-1804e378-081a-4210-b05a-7fc3549210d4;1.0
+	confs: [default]
+	found org.apache.spark#spark-sql-kafka-0-10_2.12;3.3.2 in central
+	found org.apache.spark#spark-token-provider-kafka-0-10_2.12;3.3.2 in central
+	found org.apache.hadoop#hadoop-client-runtime;3.3.2 in central
+	found org.spark-project.spark#unused;1.0.0 in central
+	found org.apache.hadoop#hadoop-client-api;3.3.2 in central
+	found org.xerial.snappy#snappy-java;1.1.8.4 in central
+	found org.slf4j#slf4j-api;1.7.32 in central
+	found commons-logging#commons-logging;1.1.3 in central
+	found com.google.code.findbugs#jsr305;3.0.0 in central
+	found org.apache.commons#commons-pool2;2.11.1 in central
+	found org.apache.kafka#kafka-clients;3.3.1 in central
+	found com.github.luben#zstd-jni;1.5.2-1 in central
+	found org.lz4#lz4-java;1.8.0 in central
+	found org.slf4j#slf4j-api;1.7.36 in local-m2-cache
+:: resolution report :: resolve 356ms :: artifacts dl 7ms
+	:: modules in use:
+	com.github.luben#zstd-jni;1.5.2-1 from central in [default]
+	com.google.code.findbugs#jsr305;3.0.0 from central in [default]
+	commons-logging#commons-logging;1.1.3 from central in [default]
+	org.apache.commons#commons-pool2;2.11.1 from central in [default]
+	org.apache.hadoop#hadoop-client-api;3.3.2 from central in [default]
+	org.apache.hadoop#hadoop-client-runtime;3.3.2 from central in [default]
+	org.apache.kafka#kafka-clients;3.3.1 from central in [default]
+	org.apache.spark#spark-sql-kafka-0-10_2.12;3.3.2 from central in [default]
+	org.apache.spark#spark-token-provider-kafka-0-10_2.12;3.3.2 from central in [default]
+	org.lz4#lz4-java;1.8.0 from central in [default]
+	org.slf4j#slf4j-api;1.7.36 from local-m2-cache in [default]
+	org.spark-project.spark#unused;1.0.0 from central in [default]
+	org.xerial.snappy#snappy-java;1.1.8.4 from central in [default]
+	:: evicted modules:
+	org.apache.kafka#kafka-clients;2.8.1 by [org.apache.kafka#kafka-clients;3.3.1] in [default]
+	org.slf4j#slf4j-api;1.7.32 by [org.slf4j#slf4j-api;1.7.36] in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   15  |   0   |   0   |   2   ||   13  |   0   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-1804e378-081a-4210-b05a-7fc3549210d4
+	confs: [default]
+	0 artifacts copied, 13 already retrieved (0kB/5ms)
+25/07/11 17:11:40 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+25/07/11 17:11:40 INFO SparkContext: Running Spark version 3.3.2
+25/07/11 17:11:40 INFO ResourceUtils: ==============================================================
+25/07/11 17:11:40 INFO ResourceUtils: No custom resources configured for spark.driver.
+25/07/11 17:11:40 INFO ResourceUtils: ==============================================================
+25/07/11 17:11:40 INFO SparkContext: Submitted application: SmartMeterKafkaProducer
+25/07/11 17:11:40 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
+25/07/11 17:11:40 INFO ResourceProfile: Limiting resource is cpu
+25/07/11 17:11:40 INFO ResourceProfileManager: Added ResourceProfile id: 0
+25/07/11 17:11:40 INFO SecurityManager: Changing view acls to: evan
+25/07/11 17:11:40 INFO SecurityManager: Changing modify acls to: evan
+25/07/11 17:11:40 INFO SecurityManager: Changing view acls groups to: 
+25/07/11 17:11:40 INFO SecurityManager: Changing modify acls groups to: 
+25/07/11 17:11:40 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(evan); groups with view permissions: Set(); users  with modify permissions: Set(evan); groups with modify permissions: Set()
+25/07/11 17:11:40 INFO Utils: Successfully started service 'sparkDriver' on port 55967.
+25/07/11 17:11:40 INFO SparkEnv: Registering MapOutputTracker
+25/07/11 17:11:40 INFO SparkEnv: Registering BlockManagerMaster
+25/07/11 17:11:40 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+25/07/11 17:11:40 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+25/07/11 17:11:40 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
+25/07/11 17:11:40 INFO DiskBlockManager: Created local directory at /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/blockmgr-fa7bf55b-514b-4c1e-93fb-661805149b46
+25/07/11 17:11:40 INFO MemoryStore: MemoryStore started with capacity 434.4 MiB
+25/07/11 17:11:40 INFO SparkEnv: Registering OutputCommitCoordinator
+25/07/11 17:11:40 INFO Utils: Successfully started service 'SparkUI' on port 4040.
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.apache.spark_spark-sql-kafka-0-10_2.12-3.3.2.jar at spark://air-de-greven.lan:55967/jars/org.apache.spark_spark-sql-kafka-0-10_2.12-3.3.2.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.apache.kafka_kafka-clients-3.3.1.jar at spark://air-de-greven.lan:55967/jars/org.apache.kafka_kafka-clients-3.3.1.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.3.2.jar at spark://air-de-greven.lan:55967/jars/org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.3.2.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/com.google.code.findbugs_jsr305-3.0.0.jar at spark://air-de-greven.lan:55967/jars/com.google.code.findbugs_jsr305-3.0.0.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.apache.commons_commons-pool2-2.11.1.jar at spark://air-de-greven.lan:55967/jars/org.apache.commons_commons-pool2-2.11.1.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.spark-project.spark_unused-1.0.0.jar at spark://air-de-greven.lan:55967/jars/org.spark-project.spark_unused-1.0.0.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.apache.hadoop_hadoop-client-runtime-3.3.2.jar at spark://air-de-greven.lan:55967/jars/org.apache.hadoop_hadoop-client-runtime-3.3.2.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.apache.hadoop_hadoop-client-api-3.3.2.jar at spark://air-de-greven.lan:55967/jars/org.apache.hadoop_hadoop-client-api-3.3.2.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.xerial.snappy_snappy-java-1.1.8.4.jar at spark://air-de-greven.lan:55967/jars/org.xerial.snappy_snappy-java-1.1.8.4.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/commons-logging_commons-logging-1.1.3.jar at spark://air-de-greven.lan:55967/jars/commons-logging_commons-logging-1.1.3.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/com.github.luben_zstd-jni-1.5.2-1.jar at spark://air-de-greven.lan:55967/jars/com.github.luben_zstd-jni-1.5.2-1.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.lz4_lz4-java-1.8.0.jar at spark://air-de-greven.lan:55967/jars/org.lz4_lz4-java-1.8.0.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:///Users/evan/.ivy2/jars/org.slf4j_slf4j-api-1.7.36.jar at spark://air-de-greven.lan:55967/jars/org.slf4j_slf4j-api-1.7.36.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO SparkContext: Added JAR file:/Users/evan/Desktop/COURS/4IABD2/spark-streaming/exam_stream/exam_stream/target/scala-2.12/smart-meter-streaming-assembly-0.1.0-SNAPSHOT.jar at spark://air-de-greven.lan:55967/jars/smart-meter-streaming-assembly-0.1.0-SNAPSHOT.jar with timestamp 1752246700531
+25/07/11 17:11:40 INFO Executor: Starting executor ID driver on host air-de-greven.lan
+25/07/11 17:11:40 INFO Executor: Starting executor with user classpath (userClassPathFirst = false): ''
+25/07/11 17:11:40 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/com.google.code.findbugs_jsr305-3.0.0.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO TransportClientFactory: Successfully created connection to air-de-greven.lan/192.168.1.158:55967 after 15 ms (0 ms spent in bootstraps)
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/com.google.code.findbugs_jsr305-3.0.0.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp11111349855118837436.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/com.google.code.findbugs_jsr305-3.0.0.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.lz4_lz4-java-1.8.0.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.lz4_lz4-java-1.8.0.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp4527599453733146297.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.lz4_lz4-java-1.8.0.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.apache.spark_spark-sql-kafka-0-10_2.12-3.3.2.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.apache.spark_spark-sql-kafka-0-10_2.12-3.3.2.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp233755921894123012.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.apache.spark_spark-sql-kafka-0-10_2.12-3.3.2.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.slf4j_slf4j-api-1.7.36.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.slf4j_slf4j-api-1.7.36.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp5758760998033420306.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.slf4j_slf4j-api-1.7.36.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/smart-meter-streaming-assembly-0.1.0-SNAPSHOT.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/smart-meter-streaming-assembly-0.1.0-SNAPSHOT.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp13950739279791636765.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/smart-meter-streaming-assembly-0.1.0-SNAPSHOT.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.3.2.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.3.2.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp13411616355134901335.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.3.2.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.apache.hadoop_hadoop-client-runtime-3.3.2.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.apache.hadoop_hadoop-client-runtime-3.3.2.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp3887289165787151685.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.apache.hadoop_hadoop-client-runtime-3.3.2.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.xerial.snappy_snappy-java-1.1.8.4.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.xerial.snappy_snappy-java-1.1.8.4.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp6525272370931391661.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.xerial.snappy_snappy-java-1.1.8.4.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.apache.kafka_kafka-clients-3.3.1.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.apache.kafka_kafka-clients-3.3.1.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp15842224273763469950.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.apache.kafka_kafka-clients-3.3.1.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/commons-logging_commons-logging-1.1.3.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/commons-logging_commons-logging-1.1.3.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp7963932313275197574.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/commons-logging_commons-logging-1.1.3.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.spark-project.spark_unused-1.0.0.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.spark-project.spark_unused-1.0.0.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp6273985186501337135.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.spark-project.spark_unused-1.0.0.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.apache.hadoop_hadoop-client-api-3.3.2.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.apache.hadoop_hadoop-client-api-3.3.2.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp14607547796601646669.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.apache.hadoop_hadoop-client-api-3.3.2.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/com.github.luben_zstd-jni-1.5.2-1.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/com.github.luben_zstd-jni-1.5.2-1.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp14199751145496584661.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/com.github.luben_zstd-jni-1.5.2-1.jar to class loader
+25/07/11 17:11:41 INFO Executor: Fetching spark://air-de-greven.lan:55967/jars/org.apache.commons_commons-pool2-2.11.1.jar with timestamp 1752246700531
+25/07/11 17:11:41 INFO Utils: Fetching spark://air-de-greven.lan:55967/jars/org.apache.commons_commons-pool2-2.11.1.jar to /private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/fetchFileTemp1993304440759432758.tmp
+25/07/11 17:11:41 INFO Executor: Adding file:/private/var/folders/qp/y8k46p7j4zx1vs63v2zcp3jh0000gn/T/spark-e62cb8dc-2cb3-49b3-9150-4180df668ec9/userFiles-c099200c-4b43-4d18-9df5-d09c1576e6ff/org.apache.commons_commons-pool2-2.11.1.jar to class loader
+25/07/11 17:11:41 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 55970.
+25/07/11 17:11:41 INFO NettyBlockTransferService: Server created on air-de-greven.lan:55970
+25/07/11 17:11:41 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+25/07/11 17:11:41 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, air-de-greven.lan, 55970, None)
+25/07/11 17:11:41 INFO BlockManagerMasterEndpoint: Registering block manager air-de-greven.lan:55970 with 434.4 MiB RAM, BlockManagerId(driver, air-de-greven.lan, 55970, None)
+25/07/11 17:11:41 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, air-de-greven.lan, 55970, None)
+25/07/11 17:11:41 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, air-de-greven.lan, 55970, None)
+25/07/11 17:11:43 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
+🚀 Streaming démarré vers Kafka topic 'smart-meters'
+📂 Source: data/halfhourly_dataset
+⏱️  Intervalle: 2000 ms
+📡 Kafka: localhost:9092
+================================================================================

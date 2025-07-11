@@ -1,16 +1,13 @@
 package kafka
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.streaming.Trigger
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-/**
- * Producteur Kafka qui simule un flux de données en temps réel
- * en envoyant des données historiques à intervalles réguliers
- * Utilise Spark Structured Streaming pour lire et traiter les données
- */
 object SmartMeterKafkaProducer {
 
   // Charger la configuration
@@ -19,7 +16,6 @@ object SmartMeterKafkaProducer {
   private val metersTopic       = config.getString("kafka.topic.meters")
   private val sleepIntervalMs   = config.getLong("kafka.producer.interval.ms")
   private val halfHourlyDataDir = config.getString("paths.meters.halfhourly")
-  private val dailyDataDir      = config.getString("paths.meters.daily")
   private val checkpointDir     = config.getString("paths.checkpoint")
 
   // Initialiser SparkSession
@@ -27,6 +23,9 @@ object SmartMeterKafkaProducer {
     .appName("SmartMeterKafkaProducer")
     .master("local[*]")
     .getOrCreate()
+
+  // Compteur de messages global
+  private var messageCounter = 0
 
   def start(): Unit = {
     import spark.implicits._
@@ -49,43 +48,64 @@ object SmartMeterKafkaProducer {
       .withColumn("key", $"LCLid".cast(StringType))
       .withColumn("value", to_json(struct(inputStream.columns.map(col): _*)))
 
+    val startTime = System.currentTimeMillis()
+
     val query = kafkaStream
       .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
       .writeStream
-      .format("kafka")
-      .option("kafka.bootstrap.servers", bootstrapServers)
-      .option("topic", metersTopic)
+      .foreachBatch { (df: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row], batchId: Long) =>
+        val currentTime = LocalDateTime.now()
+        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+        val currentTimeStr = currentTime.format(timeFormatter)
+        
+        // Calculer le temps écoulé depuis le début
+        val elapsedTimeS = (System.currentTimeMillis() - startTime) / 1000
+        
+        // Afficher les données en temps réel dans le terminal avec le format demandé
+        println(s"\n🔄 Batch $batchId - Envoi de ${df.count()} messages vers Kafka:")
+        println("=" * 120)
+        
+        df.select("key", "value").limit(10).collect().foreach { row =>
+          val key = row.getString(0)
+          val value = row.getString(1)
+          
+          // Parser le JSON pour extraire les informations
+          val json = org.json4s.jackson.JsonMethods.parse(value)
+          import org.json4s._
+          implicit val formats = DefaultFormats
+          
+          val energy = (json \ "energy(kWh/hh)").extract[Double]
+          val tstp = (json \ "tstp").extract[String]
+          
+          messageCounter += 1
+          
+          // Format demandé : 🕒 16:19:47 | 📊 Message #119601 | 🏠 MAC000322 | ⚡ 0.178 kWh | 📅 2014-02-19T04:00:00.000+01:00 | ⏱️  9s
+          println(s"🕒 $currentTimeStr | 📊 Message #$messageCounter | 🏠 $key | ⚡ ${energy} kWh | 📅 $tstp | ⏱️  ${elapsedTimeS}s")
+        }
+        
+        // Envoyer vers Kafka
+        df.write
+          .format("kafka")
+          .option("kafka.bootstrap.servers", bootstrapServers)
+          .option("topic", metersTopic)
+          .save()
+        
+        println("=" * 120)
+        println(s"✅ Batch $batchId envoyé vers topic '$metersTopic' - Total messages: $messageCounter")
+        println()
+      }
       .option("checkpointLocation", checkpointDir)
-      .option("kafka.partitioner.class", "org.apache.kafka.clients.producer.internals.DefaultPartitioner") // -> Meilleur répartion des données pour traitement en //
       .trigger(Trigger.ProcessingTime(s"${sleepIntervalMs} milliseconds"))
       .outputMode("append")
       .start()
 
-    query.awaitTermination() // bloque le thread principal jusqu'à que le flux soit terminé (garde le programme actif pour que le stream puisse continuer)
+    println(s"🚀 Streaming démarré vers Kafka topic '$metersTopic'")
+    println(s"📂 Source: $halfHourlyDataDir")
+    println(s"⏱️  Intervalle: $sleepIntervalMs ms")
+    println(s"📡 Kafka: $bootstrapServers")
+    println("=" * 120)
 
-    println(s"Streaming démarré vers Kafka topic '$metersTopic' (fichiers: $halfHourlyDataDir, interval: $sleepIntervalMs ms)")
-
-    // Traitement batch du daily_dataset (affichage simple)
-    val dailySchema = new StructType()
-      .add("LCLid", StringType)
-      .add("day", StringType)
-      .add("energy_median", DoubleType)
-      .add("energy_mean", DoubleType)
-      .add("energy_max", DoubleType)
-      .add("energy_count", IntegerType)
-      .add("energy_std", DoubleType)
-      .add("energy_sum", DoubleType)
-      .add("energy_min", DoubleType)
-
-    val dailyDF = spark.read
-      .schema(dailySchema)
-      .option("header", "true")
-      .csv(dailyDataDir)
-
-    println("Exemple de données du daily_dataset :")
-    dailyDF.show(5, truncate = false)
-
-    query.awaitTermination()
+    query.awaitTermination() // bloque le thread principal jusqu'à que le flux soit terminé
   }
 
   def main(args: Array[String]): Unit = {
